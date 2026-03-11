@@ -1,6 +1,6 @@
 import os
 import re
-from detenv import load_dotenv
+from dotenv import load_dotenv
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
@@ -45,9 +45,38 @@ def handle_message(event, say):
 
             # Feedback to user
             say(
-                text=f"Confirmed! <@{receiver_id}> now has *{new_total}* kudos! 🚀"
-                thread_ts=event["ts"]
+                text=f"Confirmed! <@{receiver_id}> now has *{new_total}* kudos! 🚀", thread_ts=event["ts"]
             )
+@app.event("reaction_added")
+def handle_reaction_added_events(event, say):
+    # filter for specific emoji
+    if event.get("reaction") == "heavy_plus_sign":
+
+        # extract the IDs from the event object
+        receiver_id = event["item_user"]
+        sender_id = event["user"]
+        original_message_ts = event["item"]["ts"]
+        channel_id = event["item"]["channel"]
+
+        if receiver_id == sender_id:
+                say(text="Nice try! You can't give yourself kudos. 😉", 
+                channel = channel_id,
+                thread_ts=original_message_ts
+                )
+                return
+
+
+        kudos_memory[receiver_id] = kudos_memory.get(receiver_id, 0) + 1
+        new_total = kudos_memory[receiver_id]
+
+        say(
+            text=f"Confirmed! <@{receiver_id}> now has *{new_total}* kudos! 🚀", 
+            channel = channel_id,
+            thread_ts=original_message_ts
+        )
+
+
+
 # 4. Startup
 if __name__ == "__main__":
     handler = SocketModeHandler(app, os.environ.get("SLACK_APP_TOKEN"))
