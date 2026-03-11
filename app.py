@@ -5,11 +5,14 @@ from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 # 1. Configuration Layer
+# Here we are using dotenv to scan for a .env file 
+# in order to retrieve the Slack bot token and pass them into the app constructor
+# which will authenticate this service with the Slack API
 load_dotenv()
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 
 # 2. The Storage (In-memory - volatile)
-# Key = USer ID, Value = Integer (Kudos Count)
+# Key = User ID, Value = Integer (Kudos Count)
 kudos_memory = {}
 
 # 3. The Logic Layer
@@ -38,7 +41,7 @@ def handle_message(event, say):
             # Update the Dictionary
             # .get(receiver_id, 0) checks for the user; if not found, starts at 0
             kudos_memory[receiver_id] = kudos_memory.get(receiver_id, 0) + 1
-            new_total = kudos_mem[receiver_id]
+            new_total = kudos_memory[receiver_id]
 
             # Feedback to user
             say(
